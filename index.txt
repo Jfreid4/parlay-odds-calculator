@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Parlay Odds Calculator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 50px auto;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+    }
+    input {
+      margin-bottom: 10px;
+      display: block;
+      width: 100%;
+      padding: 8px;
+    }
+    button {
+      padding: 10px;
+      font-size: 16px;
+      width: 100%;
+      cursor: pointer;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h2>Parlay Odds Calculator</h2>
+  <label>Enter American Odds (one per line):</label>
+  <textarea id="oddsInput" rows="5" placeholder="+135\n-355\n+190"></textarea>
+  <label>Bet Amount ($):</label>
+  <input type="number" id="betAmount" value="100" min="1">
+  <button onclick="calculateParlay()">Calculate</button>
+  <div id="result"></div>
+
+  <script>
+    function americanToDecimal(odd) {
+      return odd > 0 ? 1 + (odd / 100) : 1 + (100 / Math.abs(odd));
+    }
+
+    function decimalToAmerican(decimal) {
+      return decimal >= 2
+        ? ((decimal - 1) * 100).toFixed(2)
+        : (-100 / (decimal - 1)).toFixed(2);
+    }
+
+    function calculateParlay() {
+      const oddsText = document.getElementById("oddsInput").value.trim();
+      const bet = parseFloat(document.getElementById("betAmount").value);
+      const odds = oddsText
+        .split("\n")
+        .map(x => parseFloat(x))
+        .filter(x => !isNaN(x));
+
+      if (odds.length === 0 || isNaN(bet) || bet <= 0) {
+        document.getElementById("result").textContent = "Please enter valid odds and bet.";
+        return;
+      }
+
+      let totalDecimal = 1;
+      for (let odd of odds) {
+        totalDecimal *= americanToDecimal(odd);
+      }
+
+      const parlayOdds = decimalToAmerican(totalDecimal);
+      const payout = (bet * totalDecimal).toFixed(2);
+      const profit = (payout - bet).toFixed(2);
+
+      document.getElementById("result").innerHTML =
+        `Parlay Odds: <strong>${parlayOdds > 0 ? "+" : ""}${parlayOdds}</strong><br>
+         Total Return: $<strong>${payout}</strong><br>
+         Profit: $<strong>${profit}</strong>`;
+    }
+  </script>
+</body>
+</html>
